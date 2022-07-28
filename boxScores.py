@@ -33,6 +33,6 @@ args = parser.parse_args()
 year  = str(args.year)
 team = str(args.team)
 datdir = str(args.datdir)
-        
+
 ds.pullBoxscores(team, year, datdir, overwrite = True)
     

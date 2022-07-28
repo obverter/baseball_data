@@ -15,6 +15,7 @@ Names for the output files list the team, the year, and then the table type.
 
 """
 
+
 import pandas, os, argparse
 import baseballReferenceScrape
 
@@ -38,7 +39,7 @@ if team == "ALL":
              'PHI', 'PIT', 'SDP', 'SEA', 'SFG', 'STL', 'TBR', 'TEX', 'TOR', 'WSN'] 
     checkold = True   
     oldteams = ['ANA', 'BRO', 'CAL', 'FLA', 'KCA', 'MLN', 'MON', 'NYG', 'SLB', 'TBD', 'WSA']
-    
+
 else:
     teams = [team]
     checkold = False
@@ -47,38 +48,61 @@ else:
 ys= year.split("-")
 if len(ys) > 1:
     ys = range(int(ys[0]), int(ys[1]) + 1)
-years = []
-for y in ys: years.append(str(y))
- 
-for year in years:      
+years = [str(y) for y in ys]
+for year in years:  
     for t in teams:
         try:
             Batting = baseballReferenceScrape.pullPlayerData(t, year, "team_batting")
-            Batting.to_csv(directory + "/" + t + "_" + str(year) + "_batting.csv", index = False, encoding = "utf-8")
+            Batting.to_csv(
+                f"{directory}/" + t + "_" + str(year) + "_batting.csv",
+                index=False,
+                encoding="utf-8",
+            )
+
         except IndexError:
             pass
-    
+
         try:
             Pitching = baseballReferenceScrape.pullPlayerData(t, year, "team_pitching")
-            Pitching.to_csv(directory + "/" + t + "_" + str(year) + "_pitching.csv", index = False, encoding = "utf-8")
+            Pitching.to_csv(
+                f"{directory}/" + t + "_" + str(year) + "_pitching.csv",
+                index=False,
+                encoding="utf-8",
+            )
+
         except IndexError:
             pass
-    
+
         try:        
             Fielding =baseballReferenceScrape.pullPlayerData(t, year, "standard_fielding")
-            Fielding.to_csv(directory + "/" + t + "_" + str(year) + "_fielding.csv", index = False, encoding = "utf-8")
+            Fielding.to_csv(
+                f"{directory}/" + t + "_" + str(year) + "_fielding.csv",
+                index=False,
+                encoding="utf-8",
+            )
+
         except IndexError:
             pass
-        
+
         try:        
             ValueBatting = baseballReferenceScrape.pullPlayerData(t, year, "players_value_batting")
-            ValueBatting.to_csv(directory + "/" + t + "_" + str(year) + "_Valuebatting.csv", index = False, encoding = "utf-8")
+            ValueBatting.to_csv(
+                f"{directory}/" + t + "_" + str(year) + "_Valuebatting.csv",
+                index=False,
+                encoding="utf-8",
+            )
+
         except IndexError:
             pass
-    
+
         try:
             ValuePitching = baseballReferenceScrape.pullPlayerData(t, year, "players_value_pitching")
-            ValuePitching.to_csv(directory + "/" + t + "_" + str(year) + "_Valuepitching.csv", index = False, encoding = "utf-8")
+            ValuePitching.to_csv(
+                f"{directory}/" + t + "_" + str(year) + "_Valuepitching.csv",
+                index=False,
+                encoding="utf-8",
+            )
+
         except IndexError:
             pass
 
@@ -87,31 +111,64 @@ if checkold:
         for t in oldteams:
             try:
                 Batting = baseballReferenceScrape.pullPlayerData(t, year, "team_batting")
-                Batting.to_csv(directory + "/" + t + "_" + str(year) + "_batting.csv", index = False, encoding = "utf-8")
+                Batting.to_csv(
+                    f"{directory}/" + t + "_" + str(year) + "_batting.csv",
+                    index=False,
+                    encoding="utf-8",
+                )
+
             except IndexError:
                 pass
-                
+
             try:
                 Pitching = baseballReferenceScrape.pullPlayerData(t, year, "team_pitching")
-                Pitching.to_csv(directory + "/" + t + "_" + str(year) + "_pitching.csv", index = False, encoding = "utf-8")
+                Pitching.to_csv(
+                    f"{directory}/" + t + "_" + str(year) + "_pitching.csv",
+                    index=False,
+                    encoding="utf-8",
+                )
+
             except IndexError:
                 pass
-                
+
             try:        
                 Fielding = baseballReferenceScrape.pullPlayerData(t, year, "standard_fielding")
-                Fielding.to_csv(directory + "/" + t + "_" + str(year) + "_fielding.csv", index = False, encoding = "utf-8")
+                Fielding.to_csv(
+                    f"{directory}/" + t + "_" + str(year) + "_fielding.csv",
+                    index=False,
+                    encoding="utf-8",
+                )
+
             except IndexError:
                 pass
-                
+
             try:        
                 ValueBatting = baseballReferenceScrape.pullPlayerData(t, year, "players_value_batting")
-                ValueBatting.to_csv(directory + "/" + t + "_" + str(year) + "_Valuebatting.csv", index = False, encoding = "utf-8")
+                ValueBatting.to_csv(
+                    f"{directory}/"
+                    + t
+                    + "_"
+                    + str(year)
+                    + "_Valuebatting.csv",
+                    index=False,
+                    encoding="utf-8",
+                )
+
             except IndexError:
                 pass
-                
+
             try:
                 ValuePitching = baseballReferenceScrape.pullPlayerData(t, year, "players_value_pitching")
-                ValuePitching.to_csv(directory + "/" + t + "_" + str(year) + "_Valuepitching.csv", index = False, encoding = "utf-8")
+                ValuePitching.to_csv(
+                    f"{directory}/"
+                    + t
+                    + "_"
+                    + str(year)
+                    + "_Valuepitching.csv",
+                    index=False,
+                    encoding="utf-8",
+                )
+
             except IndexError:
                 pass
 

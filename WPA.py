@@ -8,10 +8,8 @@ import matplotlib.pyplot as plt
 from pylab import *
 
 
-def wpaer (batter, bdat):
-    duck = []
-    for duckinga in bdat["Batter"]:
-        duck.append(duckinga.replace("\xa0", "_"))
+def wpaer(batter, bdat):
+    duck = [duckinga.replace("\xa0", "_") for duckinga in bdat["Batter"]]
     bdat["Batter"] = duck
     dat = bdat.loc[bdat["Batter"]== batter]
     dat.reset_index(inplace = True, drop = True)
@@ -23,7 +21,7 @@ def wpaer (batter, bdat):
     #vals = pandas.to_numeric(vals)
     winprob = []
     vals = []
-    for rown in range(0, len(dat)):
+    for rown in range(len(dat)):
         row = dat.loc[rown]
         if row["wWPA"] == row["wWPA"]:
             if row["@Bat"] == row["Winner"]:
@@ -48,7 +46,7 @@ year = 2019
 ## This takes a while to run the first time, but in September of '17 I
 ## made changes that allow data files to be updated, rather than
 ## deleting them and starting over each time.
-teamdat = dict()
+teamdat = {}
 for t in teams:
     filen = t + "_pbp_" + str(year) + ".csv"
     if os.path.isfile(filen):
@@ -59,17 +57,17 @@ for t in teams:
     teamdat[t] = pandas.read_csv(filen)
     teamdat[t]["batteam"] = t
 
-    
+
 tdat = pandas.concat(teamdat)
 tdat.reset_index(inplace = True, drop = True)
 
 abatters = numpy.unique(tdat["Batter"])
 
-teamBatting = dict()
+teamBatting = {}
 for t in teams:
     teamdat = tdat.loc[(tdat["batteam"] == t) & (tdat["@Bat"] == t)]
     tbatters = numpy.unique(teamdat["Batter"])
-    out = dict()
+    out = {}
     for a in tbatters:
         a = a.replace("\xa0", "_")
         aa = wpaer(a, teamdat)
@@ -85,10 +83,7 @@ output = output.reset_index(drop = True)
 output["Rank"] = output.index + 1
 
 output = output[["Rank", "Name", "Team", "Plate Appearances", "Cumulative wWPA"]]
-cleannames = []
-for n in output["Name"]:
-    cleannames.append(re.sub("_", " ", n))
-    
+cleannames = [re.sub("_", " ", n) for n in output["Name"]]
 output["Name"] = cleannames
 output.to_csv("rankings.csv", index = False)   
     
@@ -115,7 +110,7 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
             cell.set_facecolor(row_colors[k[0]%len(row_colors) ])
     return ax
     
-render_mpl_table(output.loc[0:14], header_columns=0, col_width=3.2)
+render_mpl_table(output.loc[:14], header_columns=0, col_width=3.2)
 savefig("topWWPA.png", bbox_inches= 'tight')
 
 render_mpl_table(output.loc[len(output) - 15:], header_columns=0, col_width=3.2)

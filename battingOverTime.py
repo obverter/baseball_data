@@ -11,6 +11,7 @@ game chunks.
 You will need to run the boxScores.py script to get your data first. 
 """
 
+
 import pandas, os, numpy, argparse
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -28,20 +29,16 @@ year  = str(args.year)
 team = str(args.team)
 datdir = str(args.datdir)
 
-dat = pandas.read_csv(datdir + team + "_" + str(year) +  ".csv")
+dat = pandas.read_csv(datdir + team + "_" + year + ".csv")
 
 def battAvg(pdat, gamesInChunk):
     games = len(pdat)
     avgs = []
-    for g in range(0,games):
-        if g < gamesInChunk:
-            start = 0
-        else:
-            start = g - gamesInChunk
+    for g in range(games):
+        start = 0 if g < gamesInChunk else g - gamesInChunk
         xx = pdat.loc[start:g]
         avgs.append(numpy.sum(xx.H) / numpy.sum(xx.AB))
-    out = pandas.DataFrame({"Game": pdat["Game"]+ 1, "Average": avgs})
-    return(out)   
+    return pandas.DataFrame({"Game": pdat["Game"]+ 1, "Average": avgs})   
     
 ## Now I need scatter plots
 
@@ -66,7 +63,7 @@ def playerAutoScatter(player, dat, gamelag):
 players = numpy.unique(dat["Name"])
 players = players[players != "Team_Totals"]
 gamelag = 5
-    
+
 pp = PdfPages(team + '_AutoScatter_' + year + '.pdf')
 for p in players:
     plt.figure()

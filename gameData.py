@@ -29,7 +29,7 @@ def YearData(year, directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    dataBase = dict()
+    dataBase = {}
 
     teams = ['ATL', 'ARI', 'BAL', 'BOS', 'CHC', 'CHW', 'CIN', 'CLE', 'COL', 'DET',
              'KCR', 'HOU', 'LAA', 'LAD', 'MIA', 'MIL', 'MIN', 'NYM', 'NYY', 'OAK',
@@ -50,7 +50,7 @@ def YearData(year, directory):
                                "OppRuns":"RA",  
                                "W-L":"HomeWL",  
                                "Streak":"HomeStreak"}, inplace = True)
-   
+
     gameData = gameData.sort_values(["Date"])
 
     #gameData = gameData.drop("gamenum", axis = 1)
@@ -61,7 +61,7 @@ def YearData(year, directory):
 
     homeData = homeData.drop("Location", axis = 1)
 
-    homeData["Index"] = range(0, len(homeData))
+    homeData["Index"] = range(len(homeData))
 
     outfile = directory + year + "Games.csv"
 
