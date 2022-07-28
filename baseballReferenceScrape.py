@@ -45,9 +45,7 @@ def pullTable(url, tableID):
         for i in range(len(data_rows))
         ]
     data = pandas.DataFrame(game_data)
-    header = []
-    for i in range(len(data.columns)):
-        header.append(data_header[i].getText())
+    header = [data_header[i].getText() for i in range(len(data.columns))]
     data.columns = header
     data = data.loc[data[header[0]] != header[0]]
     data = data.reset_index(drop = True)
@@ -63,18 +61,18 @@ def pullTable(url, tableID):
 ## 'ATL', 'ARI', 'BAL', 'BOS', 'CHC', 'CHW', 'CIN', 'CLE', 'COL', 'DET',
 ## 'KCR', 'HOU', 'LAA', 'LAD', 'MIA', 'MIL', 'MIN', 'NYM', 'NYY', 'OAK',
 ## 'PHI', 'PIT', 'SDP', 'SEA', 'SFG', 'STL', 'TBR', 'TEX', 'TOR', 'WSN'
-def pullGameData (team, year):
+def pullGameData(team, year):
     url = "http://www.baseball-reference.com/teams/" + team + "/" + str(year) + "-schedule-scores.shtml"
     ## Let's funnel this work into the pullTable function
     dat = pullTable(url, "team_schedule")
     dates = dat["Date"]
     ndates = []
+    mapping = {"Mar": "03", "Apr": "04", "May": "05", "Jun": "06", "Jul": "07", "Aug": "08",
+               "Sep": "09", "Oct": "10", "Nov":"11"}
     for d in dates:
         month = d.split(" ")[1]
         day = d.split(" ")[2]
         day = day.zfill(2)
-        mapping = {"Mar": "03", "Apr": "04", "May": "05", "Jun": "06", "Jul": "07", "Aug": "08",
-                   "Sep": "09", "Oct": "10", "Nov":"11"}
         m = mapping[month]
         ndates.append(str(year) + m + day)
     uni, counts = numpy.unique(ndates, return_counts = True)
@@ -85,14 +83,10 @@ def pullGameData (team, year):
         if cx == 1:
             ndates.append(ux + "0")
         else:
-            for i in range(int(cx)):
-                ii = i + 1
-                ndates.append(ux + str(ii))
+            ndates.extend(ux + str(i + 1) for i in range(int(cx)))
     dat["Date"] = ndates
     dat.rename(columns = {dat.columns[4] : "Location"}, inplace = True)
-    homegame = []
-    for g in dat["Location"]:
-        homegame.append(g == "")
+    homegame = [g == "" for g in dat["Location"]]
     dat["HomeGame"] = homegame
     return(dat)
 
@@ -105,17 +99,17 @@ def pullGameData (team, year):
 ## "standard_fielding"
 ## "players_value_batting"
 ## "players_value_pitching"
-def pullPlayerData (team, year, tabletype):
+def pullPlayerData(team, year, tabletype):
     url = "http://www.baseball-reference.com/teams/" + team + "/" + str(year) + ".shtml"
     data = pullTable(url, tabletype)
     data = data[data.Name.notnull()]
     data = data.reset_index(drop = True)
     names = data.columns
-    for c in range(0, len(names)):
-        replacement = []
+    for c in range(len(names)):
         if type (data.loc[0][c]) == str:
             k = names[c]
-            for i in range(0, len(data[k])):
+            replacement = []
+            for i in range(len(data[k])):
                 p = data.loc[i][c]
                 xx = re.sub("[#@*&^%$!]", "", p)
                 xx = xx.replace("\xa0", "_")
@@ -221,14 +215,13 @@ def gameFinder (gameInfo):
 ## Pulls all of the boxscores for a team in a given year.
 ## The directory argument is used to specify where to save the .csv
 ## If overwrite is True, an existing file with the same name will be overwritten.
-def pullBoxscores (team, year, directory, overwrite = True):
+def pullBoxscores(team, year, directory, overwrite = True):
     if not os.path.exists(directory):
         os.makedirs(directory)
-    if overwrite == False:
-        if os.path.exists(directory + team + ".csv"):
-            return("This already exists!")
+    if overwrite == False and os.path.exists(directory + team + ".csv"):
+        return("This already exists!")
     dat = pullGameData(team, year)
-    DatDict = dict()
+    DatDict = {}
     for r in range(len(dat)):
         inputs = dat.loc[r]
         try:
@@ -242,7 +235,7 @@ def pullBoxscores (team, year, directory, overwrite = True):
 
 
 ## This is an internal function to pullPlaybyPlay
-def PlayByPlay (gameInfo):
+def PlayByPlay(gameInfo):
     teamNames = {"KCR":"KCA",
                  "CHW":"CHA",
                  "CHC":"CHN",
@@ -283,10 +276,7 @@ def PlayByPlay (gameInfo):
         else:
             pteam.append(pteams[0])
     dat["Pteam"] = pteam
-    if gameInfo["R"] > gameInfo["RA"]:
-        winner = oteam
-    else:
-        winner = gameInfo["Opp"]
+    winner = oteam if gameInfo["R"] > gameInfo["RA"] else gameInfo["Opp"]
     dat["Winner"] = winner
     return(dat)
 
@@ -294,7 +284,7 @@ def PlayByPlay (gameInfo):
 ## Pulls all of the play by play tables for a team for a given year.
 ## Output is the name of the .csv file you want to save.  I force a
 ## file to be saved here because the function takes a while to run.
-def pullPlaybyPlay (team, year, output, check = False):
+def pullPlaybyPlay(team, year, output, check = False):
     dat = pullGameData(team, year)
     dat = dat[dat.Time == dat.Time] ## Only pull games that have ended
     if check:
@@ -305,14 +295,14 @@ def pullPlaybyPlay (team, year, output, check = False):
         dat = dat.loc[dat.Date > mostrecent]
         dat.reset_index(inplace = True)
         dat = dat.loc[dat.Time == dat.Time]
-    DatDict = dict()
+    DatDict = {}
     for r in range(len(dat)):
         inputs = dat.loc[r]
         try:
             DatDict[r] = PlayByPlay(inputs)
         except IndexError:
             pass
-    if len(DatDict) == 0:
+    if not DatDict:
         return("No new games to be added!")
     bdat = pandas.concat(DatDict)
     bdat["Hteam"] = team
@@ -339,10 +329,9 @@ def pullPlaybyPlay (team, year, output, check = False):
     bdat["sacrifice"] = bdat["Play Description"].str.contains("Sacrifice")
     bdat["ab"] = (bdat["walk"] == False) & (bdat["sacrifice"] == False) & (bdat["interference"] == False) & (bdat["stolenB"] == False) & (bdat["wild"] == False) & (bdat["hbp"] == False) & (bdat["pick"] == False) & (bdat["balk"] == False)
     bdat["hit"] =  (bdat["walk"] == False) & (bdat["out"] == False) & (bdat["stolenB"] == False) & (bdat["error"] == False) & (bdat["ab"] == True)
-    if check:
-        if len(olddat) > 0:
-            bdat = olddat.append(bdat)
-            bdat.reset_index(inplace = True, drop = True)
+    if check and len(olddat) > 0:
+        bdat = olddat.append(bdat)
+        bdat.reset_index(inplace = True, drop = True)
     bdat.to_csv(output)
     return(bdat)
 
@@ -350,7 +339,7 @@ def pullPlaybyPlay (team, year, output, check = False):
 ## This pulls information about which hand a pitcher throws with.  I
 ## made this solely to allow pitcher handedness to be used as a
 ## variable in models.
-def pullPitcherData (team, year):
+def pullPitcherData(team, year):
     url = "http://www.baseball-reference.com/teams/" + team + "/" + str(year) + ".shtml"
     data = pullTable(url, "team_pitching")
     data = data[data.Name.notnull()]
@@ -361,11 +350,11 @@ def pullPitcherData (team, year):
     data["Year"] = year
     data["LeftHanded"] = data["Name"].str.contains("\\*")
     names = data.columns
-    for c in range(0, len(names)):
-        replacement = []
+    for c in range(len(names)):
         if type (data.loc[0][c]) == str:
             k = names[c]
-            for i in range(0, len(data[k])):
+            replacement = []
+            for i in range(len(data[k])):
                 p = data.loc[i][c]
                 xx = re.sub("[#@&*^%$!]", "", p)
                 xx = xx.replace("\xa0", "_")

@@ -20,17 +20,17 @@ teams = ['ATL', 'ARI', 'BAL', 'BOS', 'CHC', 'CHW', 'CIN', 'CLE', 'COL', 'DET',
          'KCR', 'HOU', 'LAA', 'LAD', 'MIA', 'MIL', 'MIN', 'NYM', 'NYY', 'OAK', 
          'PHI', 'PIT', 'SDP', 'SEA', 'SFG', 'STL', 'TBR', 'TEX', 'TOR', 'WSN']
 
-def WARdat (year):
-    batdict = dict()
-    pdict = dict()
+def WARdat(year):
+    batdict = {}
+    pdict = {}
 
     for t in teams:
         batdict[t] = pandas.read_csv(datdir + t + "_" + str(year) + "_Valuebatting.csv")
         pdict[t] = pandas.read_csv(datdir + t + "_" + str(year) + "_Valuepitching.csv")
-    
+
     batdat = pandas.concat(batdict)
     pdat = pandas.concat(pdict)
-    
+
     batdat = batdat.reset_index(drop = True)
     pdat = pdat.reset_index(drop = True)
     return(batdat, pdat)
@@ -40,11 +40,11 @@ bdat15, pdat15 = WARdat(2015)
 
 def WARAdd(currentyear, previousyear):
     unadjustedWAR = []
-    for row in range(0, len(currentyear)):
+    for row in range(len(currentyear)):
         player = currentyear.loc[row]["Name"]
         previous = previousyear[previousyear["Name"] == player]
         unadjustedWAR.append(numpy.sum(previous["WAR"]))
-    
+
     currentyear["PWAR"] = unadjustedWAR
     return(currentyear)
     
@@ -59,13 +59,16 @@ out = combined[combined["Name"] != "Team_Total"]
 out = out.sort_values(by = "Team")
 playerdat = out.reset_index(drop = True)
 
-teamdat = dict()
+teamdat = {}
 
 for t in teams:
     tmp = playerdat[playerdat["Team"] == t]
     xx = numpy.sum(tmp["WAR"])
     yy = numpy.sum(tmp["PWAR"])
-    teamdat[t] = pandas.DataFrame({"Team": t, "WAR": xx, "PWAR": yy}, index = range(0, 1))
+    teamdat[t] = pandas.DataFrame(
+        {"Team": t, "WAR": xx, "PWAR": yy}, index=range(1)
+    )
+
 
 teamdat = pandas.concat(teamdat)
 teamdat = teamdat.reset_index(drop = True)
@@ -74,7 +77,7 @@ def recordGraber(league, year):
     url = "http://www.baseball-reference.com/leagues/" + league + "/" + str(year) + ".shtml"
     res = requests.get(url)
     soup = bs4.BeautifulSoup(res.text)
-    datadict = dict()
+    datadict = {}
     divisions = ["E", "C", "W"]
     for d in divisions:
         tableid = "standings_" + d
@@ -85,13 +88,12 @@ def recordGraber(league, year):
             ]
         datadict[d] = pandas.DataFrame(game_data)
     leagueData = pandas.concat(datadict)
-    
+
     leagueData.rename(columns = {0 :"LongTeam", 1 :"Team", 2 :"Wins",
                               3 :"Losses", 4 :"WinPercentage", 5:"GB"}, inplace = True)
-    
+
     leagueData = leagueData[leagueData.Team.notnull()]
-    data = leagueData.reset_index(drop = True)
-    return(data)
+    return leagueData.reset_index(drop = True)
     
 alrec = recordGraber("AL", 2016)
 nlrec = recordGraber("NL", 2016)
@@ -109,7 +111,7 @@ preds = ["Int", "PWins"]
 est = sm.OLS(wardat["Wins"], wardat[preds])
 est = est.fit()
 est.summary()
-       
+
 outdat = wardat[["Team", "WAR", "Wins", "PWAR", "PWins"]]
 outdat.to_excel("WAR.xlsx", index = False)
 
@@ -158,7 +160,7 @@ for t in teams:
     else:
         ax.annotate(t,(tmp["PWins"],tmp["Wins"]), size = 15, xytext=location[t],
             arrowprops=dict(facecolor='black', shrink=0.01))
-     
+
 fig.savefig("plot.png", dpi=fig.dpi)
     
     
